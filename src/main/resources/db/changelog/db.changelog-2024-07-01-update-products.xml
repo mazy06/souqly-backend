@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="2024-07-01-update-products" author="souqly">
+        
+        <!-- Ajouter les nouvelles colonnes à la table products -->
+        <addColumn tableName="products">
+            <column name="brand" type="VARCHAR(100)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        
+        <addColumn tableName="products">
+            <column name="size" type="VARCHAR(50)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        
+        <addColumn tableName="products">
+            <column name="condition" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        
+        <addColumn tableName="products">
+            <column name="price_with_fees" type="DECIMAL(10,2)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        
+        <addColumn tableName="products">
+            <column name="shipping_info" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        
+        <addColumn tableName="products">
+            <column name="status" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        
+        <addColumn tableName="products">
+            <column name="view_count" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        
+        <addColumn tableName="products">
+            <column name="favorite_count" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        
+        <addColumn tableName="products">
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        
+        <!-- Mettre à jour les valeurs par défaut -->
+        <update tableName="products">
+            <column name="condition" value="Très bon état"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="view_count" value="0"/>
+            <column name="favorite_count" value="0"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </update>
+        
+    </changeSet>
+
+</databaseChangeLog> 
