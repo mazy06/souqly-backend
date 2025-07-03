@@ -73,7 +73,7 @@ public class AuthService {
     /**
      * Reset le mot de passe de l'utilisateur admin (endpoint provisoire)
      */
-    public boolean resetAdminPassword(String newPassword) {
+    public User resetAdminPassword(String newPassword) {
         return userService.changePasswordByEmail("admin@souqly.com", newPassword);
     }
 } 

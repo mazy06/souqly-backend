@@ -98,12 +98,8 @@ public class AuthController {
     })
     public ResponseEntity<String> resetAdminPassword(@RequestParam String newPassword) {
         try {
-            boolean success = authService.resetAdminPassword(newPassword);
-            if (success) {
-                return ResponseEntity.ok("Mot de passe de admin@souqly.com changé avec succès");
-            } else {
-                return ResponseEntity.notFound().build();
-            }
+            User updatedUser = authService.resetAdminPassword(newPassword);
+            return ResponseEntity.ok("Mot de passe de admin@souqly.com changé avec succès");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Erreur lors du changement de mot de passe: " + e.getMessage());
         }
