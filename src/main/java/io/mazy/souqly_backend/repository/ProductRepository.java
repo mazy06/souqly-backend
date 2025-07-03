@@ -16,17 +16,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     
     Page<Product> findByStatus(Product.ProductStatus status, Pageable pageable);
     
-    @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.images WHERE (:status IS NULL OR p.status = :status) " +
-           "AND (:categoryId IS NULL OR p.category.id = :categoryId) " +
-           "AND (:minPrice IS NULL OR p.price >= :minPrice) " +
-           "AND (:maxPrice IS NULL OR p.price <= :maxPrice) " +
-           "AND (:condition IS NULL OR p.condition = :condition) " +
-           "AND (:brand IS NULL OR p.brand = :brand) " +
-           "AND (:size IS NULL OR p.size = :size) " +
-           "AND (:search IS NULL OR LOWER(p.title) LIKE LOWER(CONCAT('%', :search, '%')) " +
-           "OR LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%')))")
+    @Query("SELECT p FROM Product p WHERE p.status = io.mazy.souqly_backend.entity.Product$ProductStatus.ACTIVE ORDER BY p.createdAt DESC")
+    Page<Product> findActiveProducts(Pageable pageable);
+    
+    @Query("SELECT p FROM Product p WHERE p.status = 'ACTIVE' ORDER BY p.createdAt DESC")
     Page<Product> findProductsWithFilters(
-        @Param("status") Product.ProductStatus status,
         @Param("categoryId") Long categoryId,
         @Param("minPrice") Double minPrice,
         @Param("maxPrice") Double maxPrice,
@@ -37,9 +31,14 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
         Pageable pageable
     );
 
-    @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.images")
+    @Query("SELECT p FROM Product p")
     Page<Product> findAllProducts(Pageable pageable);
     
     @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.images WHERE p.id = :id")
     Optional<Product> findByIdWithImages(@Param("id") Long id);
+
+    Page<Product> findByIsActiveTrue(Pageable pageable);
+
+    // Utiliser la méthode Spring Data par défaut pour la pagination
+    Page<Product> findAll(Pageable pageable);
 } 

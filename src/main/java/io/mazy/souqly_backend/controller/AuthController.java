@@ -88,4 +88,24 @@ public class AuthController {
             return ResponseEntity.status(401).build();
         }
     }
+    
+    @PostMapping("/admin/reset-password")
+    @Operation(summary = "Reset mot de passe admin (PROVISOIRE)", description = "Change le mot de passe de l'utilisateur admin@souqly.com")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Mot de passe changé avec succès"),
+        @ApiResponse(responseCode = "404", description = "Utilisateur non trouvé"),
+        @ApiResponse(responseCode = "400", description = "Données invalides")
+    })
+    public ResponseEntity<String> resetAdminPassword(@RequestParam String newPassword) {
+        try {
+            boolean success = authService.resetAdminPassword(newPassword);
+            if (success) {
+                return ResponseEntity.ok("Mot de passe de admin@souqly.com changé avec succès");
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Erreur lors du changement de mot de passe: " + e.getMessage());
+        }
+    }
 } 

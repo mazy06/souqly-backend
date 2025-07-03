@@ -97,25 +97,15 @@ public class ProductService {
         // Créer la pageable avec le tri
         Pageable pageableWithSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
         
-        // Utiliser la méthode avec filtres
-        return productRepository.findProductsWithFilters(
-            Product.ProductStatus.ACTIVE, 
-            categoryId, 
-            minPrice, 
-            maxPrice, 
-            condition, 
-            brand, 
-            size, 
-            search, 
-            pageableWithSort
-        );
+        // Utiliser la méthode Spring Data pour retourner uniquement les produits actifs
+        return productRepository.findByIsActiveTrue(pageableWithSort);
     }
 
     public Page<Product> getProductsForListing(Pageable pageable, Long categoryId, Double minPrice, 
                                              Double maxPrice, String condition, String brand, 
                                              String size, String search, String sortBy, String sortOrder) {
-        // Temporairement, récupérer tous les produits sans filtre de statut
-        return productRepository.findAllProducts(pageable);
+        // Retourner uniquement les produits actifs
+        return productRepository.findByIsActiveTrue(pageable);
     }
 
     public Optional<Product> getProduct(Long id) {
@@ -188,11 +178,13 @@ public class ProductService {
             throw new IllegalArgumentException("Vous n'êtes pas autorisé à modifier ce produit");
         }
         
-        // Basculer entre ACTIVE et INACTIVE
-        if (product.getStatus() == Product.ProductStatus.ACTIVE) {
-            product.setStatus(Product.ProductStatus.INACTIVE);
+        // Basculer entre actif et inactif en utilisant le champ isActive
+        if (product.getIsActive()) {
+            product.setIsActive(false);
+            product.setStatus(Product.ProductStatus.INACTIVE); // Pour compatibilité
         } else {
-            product.setStatus(Product.ProductStatus.ACTIVE);
+            product.setIsActive(true);
+            product.setStatus(Product.ProductStatus.ACTIVE); // Pour compatibilité
         }
         
         return productRepository.save(product);
