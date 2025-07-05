@@ -4,6 +4,9 @@ import io.mazy.souqly_backend.dto.ProductCreateRequest;
 import io.mazy.souqly_backend.entity.Product;
 import io.mazy.souqly_backend.entity.User;
 import io.mazy.souqly_backend.service.ProductService;
+import io.mazy.souqly_backend.dto.ProductListDTO;
+import io.mazy.souqly_backend.service.FavoriteService;
+import io.mazy.souqly_backend.repository.ProductImageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,6 +25,12 @@ import java.util.Map;
 public class ProductController {
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private FavoriteService favoriteService;
+
+    @Autowired
+    private ProductImageRepository productImageRepository;
 
     @PostMapping
     @PreAuthorize("isAuthenticated()")
@@ -51,8 +60,15 @@ public class ProductController {
         Page<Product> productPage = productService.getProductsForListing(pageable, categoryId, minPrice, 
             maxPrice, condition, brand, size, search, sortBy, sortOrder);
         
+        List<ProductListDTO> productDTOs = productPage.getContent().stream()
+            .map(product -> {
+                product.setImages(productImageRepository.findByProductId(product.getId()));
+                return new ProductListDTO(product, favoriteService.getFavoriteCount(product.getId()));
+            })
+            .collect(java.util.stream.Collectors.toList());
+        
         Map<String, Object> response = new HashMap<>();
-        response.put("content", productPage.getContent());
+        response.put("content", productDTOs);
         response.put("totalElements", productPage.getTotalElements());
         response.put("totalPages", productPage.getTotalPages());
         response.put("currentPage", productPage.getNumber());
@@ -97,29 +113,7 @@ public class ProductController {
         }
     }
 
-    @PostMapping("/{id}/favorite")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Map<String, Object>> toggleFavorite(
-        @PathVariable Long id,
-        @AuthenticationPrincipal User user
-    ) {
-        try {
-            productService.toggleFavorite(id, user.getId());
-            Map<String, Object> response = new HashMap<>();
-            response.put("isFavorite", true);
-            response.put("favoriteCount", 1); // TODO: Récupérer le vrai compteur
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
 
-    @GetMapping("/favorites")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<Product>> getFavorites(@AuthenticationPrincipal User user) {
-        List<Product> favorites = productService.getFavoriteProducts(user.getId());
-        return ResponseEntity.ok(favorites);
-    }
 
     @GetMapping("/my-products")
     @PreAuthorize("isAuthenticated()")
