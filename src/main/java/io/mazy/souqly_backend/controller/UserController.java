@@ -70,6 +70,7 @@ public class UserController {
     // ===== ENDPOINTS AVEC PARAMÈTRES DYNAMIQUES (APRÈS LES ENDPOINTS FIXES) =====
     
     @GetMapping("/{id:[0-9]+}")
+    // Utilisé pour afficher la fiche vendeur (ProductSellerCard)
     public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
         return userService.getUserById(id)
                 .map(ResponseEntity::ok)

@@ -11,5 +11,7 @@
     <include file="db/changelog/db.changelog-2024-07-01-update-products.xml"/>
     <include file="db/changelog/db.changelog-test-postgres.xml"/>
     <include file="db/changelog/db.changelog-2025-07-03-fix-product-columns.xml"/>
+    <include file="db/changelog/db.changelog-2025-01-27-add-product-location.xml"/>
+    <include file="db/changelog/db.changelog-2024-07-04-add-product-city-country.xml"/>
 
 </databaseChangeLog> 

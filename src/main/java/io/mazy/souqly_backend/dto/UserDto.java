@@ -26,6 +26,8 @@ public class UserDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private AddressDto address;
+    private int adsCount; // nombre d'annonces publiées
+    private double rating; // note moyenne (hardcodée)
     
     // Constructor from entity
     public UserDto(User user) {
@@ -46,5 +48,11 @@ public class UserDto {
         if (user.getAddress() != null) {
             this.address = new AddressDto(user.getAddress());
         }
+    }
+
+    public UserDto(User user, int adsCount) {
+        this(user);
+        this.adsCount = adsCount;
+        this.rating = 5.0; // hardcodé pour l'instant
     }
 } 

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/products")
@@ -113,8 +114,6 @@ public class ProductController {
         }
     }
 
-
-
     @GetMapping("/my-products")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<Product>> getMyProducts(@AuthenticationPrincipal User user) {
@@ -133,6 +132,27 @@ public class ProductController {
             return ResponseEntity.ok(product);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
+        }
+    }
+
+    // Récupérer les données de localisation d'un produit
+    @GetMapping("/{id}/location")
+    public ResponseEntity<Map<String, Object>> getProductLocation(@PathVariable Long id) {
+        try {
+            Optional<Product> productOpt = productService.getProduct(id);
+            if (productOpt.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            Product product = productOpt.get();
+            Map<String, Object> locationData = new HashMap<>();
+            locationData.put("latitude", product.getLatitude());
+            locationData.put("longitude", product.getLongitude());
+            locationData.put("locationName", product.getLocationName());
+            
+            return ResponseEntity.ok(locationData);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
         }
     }
 } 

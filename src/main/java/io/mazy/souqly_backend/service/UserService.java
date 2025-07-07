@@ -8,6 +8,7 @@ import io.mazy.souqly_backend.dto.UserProfileUpdateDto;
 import io.mazy.souqly_backend.entity.Address;
 import io.mazy.souqly_backend.entity.User;
 import io.mazy.souqly_backend.repository.UserRepository;
+import io.mazy.souqly_backend.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -31,6 +32,7 @@ public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ProductRepository productRepository;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -175,7 +177,12 @@ public class UserService implements UserDetailsService {
     }
 
     public Optional<UserDto> getUserById(Long id) {
-        return userRepository.findById(id).map(this::mapToUserDto);
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isPresent()) {
+            int adsCount = productRepository.findBySellerId(id).size();
+            return Optional.of(new UserDto(userOpt.get(), adsCount));
+        }
+        return Optional.empty();
     }
 
     public UserDto updateUser(Long id, User userDetails) {

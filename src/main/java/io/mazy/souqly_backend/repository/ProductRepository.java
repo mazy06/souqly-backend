@@ -38,6 +38,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Optional<Product> findByIdWithImages(@Param("id") Long id);
 
     Page<Product> findByIsActiveTrue(Pageable pageable);
+    
+    List<Product> findByIsActiveTrue();
+
+    // Méthode pour la recherche textuelle
+    Page<Product> findByIsActiveAndTitleContainingIgnoreCase(Boolean isActive, String title, Pageable pageable);
 
     // Utiliser la méthode Spring Data par défaut pour la pagination
     Page<Product> findAll(Pageable pageable);

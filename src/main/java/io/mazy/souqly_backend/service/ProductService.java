@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +35,12 @@ public class ProductService {
     @Autowired
     private ProductImageRepository productImageRepository;
 
+    public List<Product> findProductsByImage(MultipartFile image) {
+        // TODO: Logique de similarité d'image
+        // Pour le POC, retourne tous les produits actifs
+        return productRepository.findByIsActiveTrue();
+    }
+
     @Transactional
     public Product createProduct(ProductCreateRequest req, Long sellerId) {
         Category category = categoryRepository.findById(req.categoryId)
@@ -49,6 +56,8 @@ public class ProductService {
         product.setSize(req.size);
         product.setCondition(req.condition);
         product.setShippingInfo(req.shippingInfo);
+        product.setCity(req.getCity());
+        product.setCountry(req.getCountry());
         product.setCategory(category);
         product.setSeller(seller);
         product.setStatus(Product.ProductStatus.ACTIVE);
@@ -104,8 +113,15 @@ public class ProductService {
     public Page<Product> getProductsForListing(Pageable pageable, Long categoryId, Double minPrice, 
                                              Double maxPrice, String condition, String brand, 
                                              String size, String search, String sortBy, String sortOrder) {
-        // Retourner uniquement les produits actifs
-        return productRepository.findByIsActiveTrue(pageable);
+        System.out.println("[ProductService] Recherche search = '" + search + "'");
+        
+        if (search != null && !search.trim().isEmpty()) {
+            System.out.println("[ProductService] Utilisation de la recherche textuelle !");
+            return productRepository.findByIsActiveAndTitleContainingIgnoreCase(true, search.trim(), pageable);
+        } else {
+            System.out.println("[ProductService] Recherche sans filtre textuel.");
+            return productRepository.findByIsActiveTrue(pageable);
+        }
     }
 
     public Optional<Product> getProduct(Long id) {
@@ -149,6 +165,8 @@ public class ProductService {
         if (req.size != null) product.setSize(req.size);
         if (req.condition != null) product.setCondition(req.condition);
         if (req.shippingInfo != null) product.setShippingInfo(req.shippingInfo);
+        if (req.getCity() != null) product.setCity(req.getCity());
+        if (req.getCountry() != null) product.setCountry(req.getCountry());
         
         if (req.categoryId != null) {
             Category category = categoryRepository.findById(req.categoryId)
