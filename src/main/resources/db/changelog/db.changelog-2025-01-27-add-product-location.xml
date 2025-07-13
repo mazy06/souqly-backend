@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="2025-01-27-add-product-location" author="toufik">
+        <!-- Ajouter les colonnes de localisation -->
+        <addColumn tableName="products">
+            <column name="latitude" type="double precision">
+                <constraints nullable="true"/>
+            </column>
+            <column name="longitude" type="double precision">
+                <constraints nullable="true"/>
+            </column>
+            <column name="location_name" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        
+        <!-- Ajouter des données d'exemple pour les produits existants (Paris) -->
+        <update tableName="products">
+            <column name="latitude" value="48.8566"/>
+            <column name="longitude" value="2.3522"/>
+            <column name="location_name" value="Paris, France"/>
+            <where>latitude IS NULL</where>
+        </update>
+    </changeSet>
+
+</databaseChangeLog> 

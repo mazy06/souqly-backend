@@ -13,5 +13,9 @@
     <include file="db/changelog/db.changelog-2025-07-03-fix-product-columns.xml"/>
     <include file="db/changelog/db.changelog-2025-01-27-add-product-location.xml"/>
     <include file="db/changelog/db.changelog-2024-07-04-add-product-city-country.xml"/>
+    <include file="db/changelog/db.changelog-2025-07-07-remove-product-lat-lng.xml"/>
+    <include file="db/changelog/db.changelog-2025-07-07-remove-product-locationname.xml"/>
+    <include file="db/changelog/add_chat_message_table.xml"/>
+    <include file="db/changelog/add_conversations_table.xml"/>
 
 </databaseChangeLog> 

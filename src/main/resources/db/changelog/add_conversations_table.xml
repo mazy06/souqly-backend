@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="create-conversations-table" author="cursor-ai">
+        <createTable tableName="conversations">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="conversation_id" type="VARCHAR(255)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="buyer_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="seller_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="BIGINT"/>
+            <column name="last_message" type="TEXT"/>
+            <column name="last_message_time" type="TIMESTAMP"/>
+            <column name="unread_count_buyer" type="INTEGER" defaultValue="0"/>
+            <column name="unread_count_seller" type="INTEGER" defaultValue="0"/>
+            <column name="created_at" type="TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP"/>
+        </createTable>
+
+        <!-- Index pour améliorer les performances -->
+        <createIndex tableName="conversations" indexName="idx_conversations_buyer_id">
+            <column name="buyer_id"/>
+        </createIndex>
+        
+        <createIndex tableName="conversations" indexName="idx_conversations_seller_id">
+            <column name="seller_id"/>
+        </createIndex>
+        
+        <createIndex tableName="conversations" indexName="idx_conversations_product_id">
+            <column name="product_id"/>
+        </createIndex>
+
+        <!-- Clés étrangères -->
+        <addForeignKeyConstraint 
+            baseTableName="conversations" 
+            baseColumnNames="buyer_id" 
+            constraintName="fk_conversations_buyer"
+            referencedTableName="users" 
+            referencedColumnNames="id"/>
+            
+        <addForeignKeyConstraint 
+            baseTableName="conversations" 
+            baseColumnNames="seller_id" 
+            constraintName="fk_conversations_seller"
+            referencedTableName="users" 
+            referencedColumnNames="id"/>
+            
+        <addForeignKeyConstraint 
+            baseTableName="conversations" 
+            baseColumnNames="product_id" 
+            constraintName="fk_conversations_product"
+            referencedTableName="products" 
+            referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog> 

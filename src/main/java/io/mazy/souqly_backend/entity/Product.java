@@ -89,14 +89,8 @@ public class Product {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
     
-    @Column(name = "latitude")
-    private Double latitude;
     
-    @Column(name = "longitude")
-    private Double longitude;
     
-    @Column(name = "location_name")
-    private String locationName;
     
     @Column(name = "city")
     private String city;

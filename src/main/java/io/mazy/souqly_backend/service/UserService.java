@@ -25,6 +25,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @Service
 @RequiredArgsConstructor
@@ -255,5 +258,36 @@ public class UserService implements UserDetailsService {
 
     private UserDto mapToUserDto(User user) {
         return new UserDto(user);
+    }
+
+    // Récupérer l'utilisateur connecté
+    public User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            final String username;
+            
+            // Gérer différents types de Principal
+            if (authentication.getPrincipal() instanceof org.springframework.security.core.userdetails.User) {
+                org.springframework.security.core.userdetails.User userDetails = 
+                    (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
+                username = userDetails.getUsername();
+            } else if (authentication.getPrincipal() instanceof String) {
+                username = (String) authentication.getPrincipal();
+            } else if (authentication.getPrincipal() instanceof UserDetails) {
+                UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+                username = userDetails.getUsername();
+            } else {
+                throw new RuntimeException("Type de Principal non supporté");
+            }
+            
+            return userRepository.findByEmail(username)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'email: " + username));
+        }
+        throw new RuntimeException("Utilisateur non authentifié");
+    }
+
+    // Récupérer l'ID de l'utilisateur connecté
+    public Long getCurrentUserId() {
+        return getCurrentUser().getId();
     }
 } 

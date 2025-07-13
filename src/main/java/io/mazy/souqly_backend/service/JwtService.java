@@ -8,6 +8,7 @@ import io.jsonwebtoken.security.Keys;
 import io.mazy.souqly_backend.entity.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -15,9 +16,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
 public class JwtService {
+    
+    @Autowired
+    private UserService userService;
     
     @Value("${jwt.secret:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}")
     private String secretKey;
@@ -95,5 +100,11 @@ public class JwtService {
     
     public String getRoleFromToken(String token) {
         return extractClaim(token, claims -> claims.get("role", String.class));
+    }
+
+    public UserDetails extractUserDetails(String token) {
+        String username = extractUsername(token);
+        if (username == null) return null;
+        return userService.loadUserByUsername(username);
     }
 } 

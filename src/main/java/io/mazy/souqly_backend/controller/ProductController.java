@@ -146,9 +146,8 @@ public class ProductController {
             
             Product product = productOpt.get();
             Map<String, Object> locationData = new HashMap<>();
-            locationData.put("latitude", product.getLatitude());
-            locationData.put("longitude", product.getLongitude());
-            locationData.put("locationName", product.getLocationName());
+            locationData.put("city", product.getCity());
+            locationData.put("country", product.getCountry());
             
             return ResponseEntity.ok(locationData);
         } catch (Exception e) {
