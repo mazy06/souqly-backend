@@ -6,6 +6,7 @@ import io.mazy.souqly_backend.entity.Favorite;
 import io.mazy.souqly_backend.entity.Product;
 import io.mazy.souqly_backend.service.FavoriteService;
 import io.mazy.souqly_backend.service.ProductService;
+import io.mazy.souqly_backend.service.UserService;
 import io.mazy.souqly_backend.repository.ProductImageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,9 @@ public class FavoriteController {
     
     @Autowired
     private ProductService productService;
+    
+    @Autowired
+    private UserService userService;
     
     @Autowired
     private ProductImageRepository productImageRepository;
@@ -105,8 +109,6 @@ public class FavoriteController {
      * Méthode utilitaire pour récupérer l'ID utilisateur depuis l'authentification
      */
     private Long getUserIdFromAuthentication(Authentication authentication) {
-        // TODO: Implémenter la logique pour récupérer l'ID utilisateur
-        // Pour l'instant, on retourne un ID par défaut
-        return 1L; // À remplacer par la vraie logique
+        return userService.getCurrentUserId();
     }
 } 

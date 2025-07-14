@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/api/conversations")
@@ -90,6 +91,21 @@ public class ConversationRestController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().build();
+        }
+    }
+
+    // Récupérer une conversation par ID
+    @GetMapping("/{conversationId}")
+    public ResponseEntity<ConversationDto> getConversation(@PathVariable String conversationId) {
+        System.out.println(">>> getConversation called with id: " + conversationId);
+        try {
+            Long userId = userService.getCurrentUserId();
+            ConversationDto conversation = conversationService.getConversationById(conversationId, userId);
+            return ResponseEntity.ok(conversation);
+        } catch (Exception e) {
+            System.out.println("[ConversationRestController] Exception dans getConversation : " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 

@@ -21,4 +21,7 @@ public class ConversationDto {
     private String productTitle;
     private String productImageUrl;
     private LocalDateTime lastMessageTime;
+    // Ajouté pour le frontend
+    private String buyerName;
+    private String sellerName;
 } 

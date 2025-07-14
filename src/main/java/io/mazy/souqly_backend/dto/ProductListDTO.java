@@ -3,6 +3,7 @@ package io.mazy.souqly_backend.dto;
 import io.mazy.souqly_backend.entity.Product;
 import io.mazy.souqly_backend.entity.ProductImage;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ProductListDTO {
     private Long id;
@@ -15,7 +16,7 @@ public class ProductListDTO {
     private String shippingInfo;
     private String status;
     private int favoriteCount;
-    private List<ProductImage> images;
+    private List<ImageMeta> images;
     // Ajoute d'autres champs si besoin
 
     public ProductListDTO(Product product, int favoriteCount) {
@@ -29,7 +30,23 @@ public class ProductListDTO {
         this.shippingInfo = product.getShippingInfo();
         this.status = product.getStatus().toString();
         this.favoriteCount = favoriteCount;
-        this.images = product.getImages();
+        this.images = product.getImages().stream()
+            .map(img -> new ImageMeta(img.getId(), img.getFileName(), img.getContentType()))
+            .collect(Collectors.toList());
+    }
+
+    public static class ImageMeta {
+        private Long id;
+        private String fileName;
+        private String contentType;
+        public ImageMeta(Long id, String fileName, String contentType) {
+            this.id = id;
+            this.fileName = fileName;
+            this.contentType = contentType;
+        }
+        public Long getId() { return id; }
+        public String getFileName() { return fileName; }
+        public String getContentType() { return contentType; }
     }
 
     // Getters et setters
@@ -43,5 +60,5 @@ public class ProductListDTO {
     public String getShippingInfo() { return shippingInfo; }
     public String getStatus() { return status; }
     public int getFavoriteCount() { return favoriteCount; }
-    public List<ProductImage> getImages() { return images; }
+    public List<ImageMeta> getImages() { return images; }
 } 

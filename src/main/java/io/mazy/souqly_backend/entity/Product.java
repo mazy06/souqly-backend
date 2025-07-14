@@ -6,6 +6,9 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.Cacheable;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -13,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Cacheable
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "products")
 @Data
 @NoArgsConstructor
@@ -34,6 +39,7 @@ public class Product {
     
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<ProductImage> images = new ArrayList<>();
     
     @ManyToOne(optional = false)

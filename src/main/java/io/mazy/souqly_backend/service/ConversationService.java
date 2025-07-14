@@ -152,6 +152,19 @@ public class ConversationService {
         conversationRepository.save(conversation);
     }
 
+    // Récupérer une conversation par ID (et vérifier l'accès)
+    public ConversationDto getConversationById(String conversationId, Long userId) {
+        ConversationEntity conversation = conversationRepository.findByConversationId(conversationId)
+            .orElseThrow(() -> new RuntimeException("Conversation non trouvée"));
+
+        // Vérifier que l'utilisateur fait partie de la conversation
+        if (!conversation.getBuyer().getId().equals(userId) && !conversation.getSeller().getId().equals(userId)) {
+            throw new RuntimeException("Accès non autorisé à cette conversation");
+        }
+
+        return convertToDto(conversation);
+    }
+
     // Convertir une entité Conversation en DTO
     private ConversationDto convertToDto(ConversationEntity conversation) {
         ConversationDto dto = new ConversationDto();
@@ -169,9 +182,12 @@ public class ConversationService {
         dto.setSellerId(conversation.getSeller().getId());
         
         // Déterminer le nom et l'avatar à afficher
-        // TODO: Implémenter la logique pour déterminer quel utilisateur afficher
         dto.setName(conversation.getSeller().getFirstName() + " " + conversation.getSeller().getLastName());
         dto.setAvatarUrl(conversation.getSeller().getProfilePictureUrl());
+        
+        // Ajout des noms explicites pour le frontend
+        dto.setSellerName(conversation.getSeller().getFirstName() + " " + conversation.getSeller().getLastName());
+        dto.setBuyerName(conversation.getBuyer().getFirstName() + " " + conversation.getBuyer().getLastName());
         
         // Formater le temps
         if (conversation.getLastMessageTime() != null) {
@@ -179,7 +195,6 @@ public class ConversationService {
         }
         
         // Déterminer le nombre de messages non lus
-        // TODO: Implémenter la logique pour déterminer le bon compteur selon l'utilisateur
         dto.setUnreadCount(conversation.getUnreadCountBuyer());
         
         return dto;

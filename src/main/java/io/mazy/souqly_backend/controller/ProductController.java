@@ -78,6 +78,22 @@ public class ProductController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/cacheable")
+    public ResponseEntity<Map<String, Object>> getProductsCacheable(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int pageSize
+    ) {
+        Pageable pageable = PageRequest.of(page, pageSize);
+        var productPage = productService.getProductsForListingCacheable(pageable);
+        Map<String, Object> response = new HashMap<>();
+        response.put("content", productPage.getContent());
+        response.put("totalElements", productPage.getTotalElements());
+        response.put("totalPages", productPage.getTotalPages());
+        response.put("currentPage", productPage.getNumber());
+        response.put("size", productPage.getSize());
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Product> getProduct(@PathVariable Long id) {
         return productService.getProduct(id)
@@ -153,5 +169,11 @@ public class ProductController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    @PostMapping("/favorite-counts")
+    public ResponseEntity<Map<Long, Long>> getFavoriteCounts(@RequestBody List<Long> productIds) {
+        Map<Long, Long> counts = favoriteService.getFavoriteCountsForProducts(productIds);
+        return ResponseEntity.ok(counts);
     }
 } 

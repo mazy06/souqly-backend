@@ -32,4 +32,12 @@ public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
     
     // Compter les favoris d'un utilisateur
     long countByUserId(Long userId);
+
+    public interface ProductFavoriteCount {
+        Long getProductId();
+        Long getCount();
+    }
+
+    @Query("SELECT f.productId as productId, COUNT(f) as count FROM Favorite f WHERE f.productId IN :productIds GROUP BY f.productId")
+    List<ProductFavoriteCount> countFavoritesByProductIds(@Param("productIds") List<Long> productIds);
 } 

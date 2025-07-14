@@ -20,6 +20,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
+import io.mazy.souqly_backend.dto.ProductListDTO;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
@@ -206,5 +208,10 @@ public class ProductService {
         }
         
         return productRepository.save(product);
+    }
+
+    public Page<ProductListDTO> getProductsForListingCacheable(Pageable pageable) {
+        Page<Product> productPage = productRepository.findActiveProductsCacheable(pageable);
+        return productPage.map(product -> new ProductListDTO(product, product.getFavoriteCount()));
     }
 } 

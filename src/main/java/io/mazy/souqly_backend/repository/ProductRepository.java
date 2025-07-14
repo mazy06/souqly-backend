@@ -4,7 +4,10 @@ import io.mazy.souqly_backend.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.QueryHints;
+import jakarta.persistence.QueryHint;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
@@ -17,7 +20,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findByStatus(Product.ProductStatus status, Pageable pageable);
     
     @Query("SELECT p FROM Product p WHERE p.status = io.mazy.souqly_backend.entity.Product$ProductStatus.ACTIVE ORDER BY p.createdAt DESC")
-    Page<Product> findActiveProducts(Pageable pageable);
+    @QueryHints({ @QueryHint(name = "org.hibernate.cacheable", value = "true") })
+    Page<Product> findActiveProductsCacheable(Pageable pageable);
     
     @Query("SELECT p FROM Product p WHERE p.status = 'ACTIVE' ORDER BY p.createdAt DESC")
     Page<Product> findProductsWithFilters(
@@ -46,4 +50,12 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     // Utiliser la méthode Spring Data par défaut pour la pagination
     Page<Product> findAll(Pageable pageable);
+
+    @Modifying
+    @Query("UPDATE Product p SET p.favoriteCount = p.favoriteCount + 1 WHERE p.id = :productId")
+    void incrementFavoriteCount(@Param("productId") Long productId);
+
+    @Modifying
+    @Query("UPDATE Product p SET p.favoriteCount = p.favoriteCount - 1 WHERE p.id = :productId AND p.favoriteCount > 0")
+    void decrementFavoriteCount(@Param("productId") Long productId);
 } 
