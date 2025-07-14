@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.mazy.souqly_backend.service.ChatKafkaProducer;
 
 @Service
 public class ConversationService {
@@ -36,6 +38,12 @@ public class ConversationService {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private ChatKafkaProducer chatKafkaProducer;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
     // Récupérer toutes les conversations d'un utilisateur
@@ -43,7 +51,7 @@ public class ConversationService {
         List<ConversationEntity> conversations = conversationRepository.findByUserId(userId);
         
         return conversations.stream()
-            .map(this::convertToDto)
+            .map(conversation -> convertToDto(conversation, userId))
             .collect(Collectors.toList());
     }
 
@@ -84,7 +92,7 @@ public class ConversationService {
         
         chatMessageRepository.save(firstMessage);
 
-        return convertToDto(conversation);
+        return convertToDto(conversation, buyerId);
     }
 
     // Récupérer les messages d'une conversation
@@ -126,14 +134,25 @@ public class ConversationService {
         conversation.setLastMessage(content);
         conversation.setLastMessageTime(LocalDateTime.now());
         
-        // Incrémenter le compteur de messages non lus pour l'autre utilisateur
+        // Incrémenter le compteur de messages non lus pour le destinataire uniquement
         if (conversation.getBuyer().getId().equals(senderId)) {
+            // L'acheteur envoie un message → le vendeur a un message non lu
             conversation.setUnreadCountSeller(conversation.getUnreadCountSeller() + 1);
-        } else {
+        } else if (conversation.getSeller().getId().equals(senderId)) {
+            // Le vendeur envoie un message → l'acheteur a un message non lu
             conversation.setUnreadCountBuyer(conversation.getUnreadCountBuyer() + 1);
         }
         
         conversationRepository.save(conversation);
+
+        // Publier l'événement dans Kafka
+        try {
+            MessageDto messageDto = convertToMessageDto(message, senderId);
+            String messageJson = objectMapper.writeValueAsString(messageDto);
+            chatKafkaProducer.sendMessage(messageJson);
+        } catch (Exception e) {
+            System.err.println("[Kafka] Erreur lors de la publication du message : " + e.getMessage());
+        }
 
         return convertToMessageDto(message, senderId);
     }
@@ -162,11 +181,11 @@ public class ConversationService {
             throw new RuntimeException("Accès non autorisé à cette conversation");
         }
 
-        return convertToDto(conversation);
+        return convertToDto(conversation, userId);
     }
 
     // Convertir une entité Conversation en DTO
-    private ConversationDto convertToDto(ConversationEntity conversation) {
+    private ConversationDto convertToDto(ConversationEntity conversation, Long userId) {
         ConversationDto dto = new ConversationDto();
         dto.setId(conversation.getConversationId());
         dto.setLastMessage(conversation.getLastMessage());
@@ -194,8 +213,14 @@ public class ConversationService {
             dto.setTime(conversation.getLastMessageTime().format(TIME_FORMATTER));
         }
         
-        // Déterminer le nombre de messages non lus
-        dto.setUnreadCount(conversation.getUnreadCountBuyer());
+        // Déterminer le nombre de messages non lus selon l'utilisateur
+        if (conversation.getBuyer().getId().equals(userId)) {
+            dto.setUnreadCount(conversation.getUnreadCountBuyer());
+        } else if (conversation.getSeller().getId().equals(userId)) {
+            dto.setUnreadCount(conversation.getUnreadCountSeller());
+        } else {
+            dto.setUnreadCount(0); // Utilisateur non autorisé
+        }
         
         return dto;
     }

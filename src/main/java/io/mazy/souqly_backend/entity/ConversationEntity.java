@@ -33,7 +33,7 @@ public class ConversationEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;
-    
+
     @Column(name = "last_message")
     private String lastMessage;
     

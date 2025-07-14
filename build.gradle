@@ -9,7 +9,7 @@ version = '0.0.1-SNAPSHOT'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(24)
+		languageVersion = JavaLanguageVersion.of(21)
 	}
 }
 
@@ -30,6 +30,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+	implementation 'org.springframework.kafka:spring-kafka' // Version gérée par Spring Boot
 	implementation 'org.liquibase:liquibase-core:4.27.0'
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'

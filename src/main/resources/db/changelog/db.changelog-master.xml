@@ -6,6 +6,7 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
 
     <!-- Include all changelog files -->
+    <include file="db/changelog/db.changelog-2024-07-01-create-users.xml"/>
     <include file="db/changelog/db.changelog-2024-07-01-product.xml"/>
     <include file="db/changelog/db.changelog-2024-07-01-product-images-blob.xml"/>
     <include file="db/changelog/db.changelog-2024-07-01-update-products.xml"/>
