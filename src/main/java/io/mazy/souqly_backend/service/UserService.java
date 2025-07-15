@@ -5,6 +5,7 @@ import io.mazy.souqly_backend.dto.PasswordUpdateDto;
 import io.mazy.souqly_backend.dto.UserDto;
 import io.mazy.souqly_backend.dto.UserProfileDto;
 import io.mazy.souqly_backend.dto.UserProfileUpdateDto;
+import io.mazy.souqly_backend.dto.UserProfileDetailDto;
 import io.mazy.souqly_backend.entity.Address;
 import io.mazy.souqly_backend.entity.User;
 import io.mazy.souqly_backend.repository.UserRepository;
@@ -36,6 +37,7 @@ public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final ProductRepository productRepository;
+    private final SubscriptionService subscriptionService;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -289,5 +291,49 @@ public class UserService implements UserDetailsService {
     // Récupérer l'ID de l'utilisateur connecté
     public Long getCurrentUserId() {
         return getCurrentUser().getId();
+    }
+    
+    // Méthodes pour le profil détaillé
+    public UserProfileDetailDto getUserProfileDetail(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Utilisateur non trouvé"));
+        
+        Long currentUserId = getCurrentUserId();
+        boolean isOwnProfile = currentUserId.equals(userId);
+        
+        long followersCount = subscriptionService.getFollowersCount(userId);
+        long followingCount = subscriptionService.getFollowingCount(userId);
+        long productsCount = productRepository.findBySellerId(userId).size();
+        boolean isFollowing = !isOwnProfile && subscriptionService.isFollowing(currentUserId, userId);
+        
+        return UserProfileDetailDto.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .phone(user.getPhone())
+                .profilePictureUrl(user.getProfilePictureUrl())
+                .address(mapToAddressDto(user.getAddress()))
+                .createdAt(user.getCreatedAt())
+                .followersCount(followersCount)
+                .followingCount(followingCount)
+                .productsCount(productsCount)
+                .isFollowing(isFollowing)
+                .isOwnProfile(isOwnProfile)
+                .build();
+    }
+    
+    private AddressDto mapToAddressDto(Address address) {
+        if (address == null) {
+            return null;
+        }
+        
+        AddressDto addressDto = new AddressDto();
+        addressDto.setStreet(address.getStreet());
+        addressDto.setCity(address.getCity());
+        addressDto.setState(address.getState());
+        addressDto.setZipCode(address.getZipCode());
+        addressDto.setCountry(address.getCountry());
+        return addressDto;
     }
 } 

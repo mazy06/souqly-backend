@@ -4,6 +4,7 @@ import io.mazy.souqly_backend.dto.UserDto;
 import io.mazy.souqly_backend.dto.UserProfileDto;
 import io.mazy.souqly_backend.dto.UserProfileUpdateDto;
 import io.mazy.souqly_backend.dto.PasswordUpdateDto;
+import io.mazy.souqly_backend.dto.UserProfileDetailDto;
 import io.mazy.souqly_backend.entity.User;
 import io.mazy.souqly_backend.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -129,5 +130,16 @@ public class UserController {
     public ResponseEntity<Boolean> existsByEmail(@PathVariable String email) {
         boolean exists = userService.existsByEmail(email);
         return ResponseEntity.ok(exists);
+    }
+    
+    // Nouveaux endpoints pour le profil détaillé
+    @GetMapping("/{id:[0-9]+}/profile-detail")
+    public ResponseEntity<UserProfileDetailDto> getUserProfileDetail(@PathVariable Long id) {
+        try {
+            UserProfileDetailDto profileDetail = userService.getUserProfileDetail(id);
+            return ResponseEntity.ok(profileDetail);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 }

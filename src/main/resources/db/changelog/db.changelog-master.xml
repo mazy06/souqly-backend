@@ -18,5 +18,6 @@
     <include file="db/changelog/db.changelog-2025-07-07-remove-product-locationname.xml"/>
     <include file="db/changelog/add_chat_message_table.xml"/>
     <include file="db/changelog/add_conversations_table.xml"/>
+    <include file="db/changelog/add_subscriptions_table.xml"/>
 
 </databaseChangeLog> 

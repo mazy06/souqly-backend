@@ -151,6 +151,25 @@ public class ProductController {
         }
     }
 
+    @PutMapping("/{id}/status")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Product> updateProductStatus(
+        @PathVariable Long id,
+        @RequestBody Map<String, String> request,
+        @AuthenticationPrincipal User user
+    ) {
+        try {
+            String status = request.get("status");
+            if (status == null || (!status.equals("ACTIVE") && !status.equals("INACTIVE"))) {
+                return ResponseEntity.badRequest().build();
+            }
+            Product product = productService.updateProductStatus(id, status, user.getId());
+            return ResponseEntity.ok(product);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     // Récupérer les données de localisation d'un produit
     @GetMapping("/{id}/location")
     public ResponseEntity<Map<String, Object>> getProductLocation(@PathVariable Long id) {
@@ -175,5 +194,15 @@ public class ProductController {
     public ResponseEntity<Map<Long, Long>> getFavoriteCounts(@RequestBody List<Long> productIds) {
         Map<Long, Long> counts = favoriteService.getFavoriteCountsForProducts(productIds);
         return ResponseEntity.ok(counts);
+    }
+    
+    @GetMapping("/seller/{sellerId}")
+    public ResponseEntity<List<Product>> getProductsBySeller(@PathVariable Long sellerId) {
+        try {
+            List<Product> products = productService.getProductsBySeller(sellerId);
+            return ResponseEntity.ok(products);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 } 

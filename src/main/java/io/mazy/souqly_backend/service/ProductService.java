@@ -210,6 +210,34 @@ public class ProductService {
         return productRepository.save(product);
     }
 
+    @Transactional
+    public Product updateProductStatus(Long productId, String status, Long sellerId) {
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> new IllegalArgumentException("Produit non trouvé"));
+        
+        if (!product.getSeller().getId().equals(sellerId)) {
+            throw new IllegalArgumentException("Vous n'êtes pas autorisé à modifier ce produit");
+        }
+        
+        try {
+            Product.ProductStatus productStatus = Product.ProductStatus.valueOf(status);
+            
+            if (Product.ProductStatus.ACTIVE.equals(productStatus)) {
+                product.setIsActive(true);
+                product.setStatus(Product.ProductStatus.ACTIVE);
+            } else if (Product.ProductStatus.INACTIVE.equals(productStatus)) {
+                product.setIsActive(false);
+                product.setStatus(Product.ProductStatus.INACTIVE);
+            } else {
+                throw new IllegalArgumentException("Statut invalide: " + status);
+            }
+            
+            return productRepository.save(product);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Statut invalide: " + status);
+        }
+    }
+
     public Page<ProductListDTO> getProductsForListingCacheable(Pageable pageable) {
         Page<Product> productPage = productRepository.findActiveProductsCacheable(pageable);
         return productPage.map(product -> new ProductListDTO(product, product.getFavoriteCount()));

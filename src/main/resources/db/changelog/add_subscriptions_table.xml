@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
+
+    <changeSet id="2025-01-27-add-subscriptions-table" author="souqly">
+        <createTable tableName="subscriptions">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="follower_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_subscription_follower" references="users(id)"/>
+            </column>
+            <column name="following_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_subscription_following" references="users(id)"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        
+        <!-- Index pour éviter les doublons -->
+        <createIndex tableName="subscriptions" indexName="idx_subscription_unique">
+            <column name="follower_id"/>
+            <column name="following_id"/>
+        </createIndex>
+        
+        <!-- Index pour les performances -->
+        <createIndex tableName="subscriptions" indexName="idx_subscription_follower">
+            <column name="follower_id"/>
+        </createIndex>
+        
+        <createIndex tableName="subscriptions" indexName="idx_subscription_following">
+            <column name="following_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog> 
