@@ -58,4 +58,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Modifying
     @Query("UPDATE Product p SET p.favoriteCount = p.favoriteCount - 1 WHERE p.id = :productId AND p.favoriteCount > 0")
     void decrementFavoriteCount(@Param("productId") Long productId);
+
+    List<Product> findBySellerIdAndStatus(Long sellerId, Product.ProductStatus status);
+
+    @Query("SELECT p FROM Product p WHERE p.seller.id = :sellerId AND p.status IN ('INACTIVE', 'SOLD', 'DELETED')")
+    List<Product> findBySellerIdAndTerminatedStatus(@Param("sellerId") Long sellerId);
 } 

@@ -19,5 +19,6 @@
     <include file="db/changelog/add_chat_message_table.xml"/>
     <include file="db/changelog/add_conversations_table.xml"/>
     <include file="db/changelog/add_subscriptions_table.xml"/>
+    <include file="db/changelog/add_product_views_table.xml"/>
 
 </databaseChangeLog> 

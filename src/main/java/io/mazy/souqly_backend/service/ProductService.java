@@ -5,6 +5,7 @@ import io.mazy.souqly_backend.entity.Category;
 import io.mazy.souqly_backend.entity.Product;
 import io.mazy.souqly_backend.entity.ProductImage;
 import io.mazy.souqly_backend.entity.User;
+import io.mazy.souqly_backend.entity.ProductView;
 import io.mazy.souqly_backend.repository.CategoryRepository;
 import io.mazy.souqly_backend.repository.ProductImageRepository;
 import io.mazy.souqly_backend.repository.ProductRepository;
@@ -20,8 +21,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.ArrayList;
 import io.mazy.souqly_backend.dto.ProductListDTO;
+import io.mazy.souqly_backend.entity.elasticsearch.ProductDocument;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.PageImpl;
+import io.mazy.souqly_backend.repository.ProductViewRepository;
 
 @Service
 public class ProductService {
@@ -36,6 +41,12 @@ public class ProductService {
     
     @Autowired
     private ProductImageRepository productImageRepository;
+    
+    @Autowired
+    private ElasticsearchService elasticsearchService;
+    
+    @Autowired
+    private ProductViewRepository productViewRepository;
 
     public List<Product> findProductsByImage(MultipartFile image) {
         // TODO: Logique de similarité d'image
@@ -78,51 +89,45 @@ public class ProductService {
         return product;
     }
 
-    public Page<Product> getProducts(Pageable pageable, Long categoryId, Double minPrice, 
-                                   Double maxPrice, String condition, String brand, 
-                                   String size, String search, String sortBy, String sortOrder) {
-        
-        // Créer le tri
-        Sort sort = Sort.unsorted();
-        if (sortBy != null && sortOrder != null) {
-            Sort.Direction direction = "desc".equalsIgnoreCase(sortOrder) ? 
-                Sort.Direction.DESC : Sort.Direction.ASC;
-            
-            switch (sortBy.toLowerCase()) {
-                case "price":
-                    sort = Sort.by(direction, "price");
-                    break;
-                case "createdat":
-                    sort = Sort.by(direction, "createdAt");
-                    break;
-                case "favoritecount":
-                    sort = Sort.by(direction, "favoriteCount");
-                    break;
-                default:
-                    sort = Sort.by(Sort.Direction.DESC, "createdAt");
-            }
-        } else {
-            sort = Sort.by(Sort.Direction.DESC, "createdAt");
-        }
 
-        // Créer la pageable avec le tri
-        Pageable pageableWithSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
-        
-        // Utiliser la méthode Spring Data pour retourner uniquement les produits actifs
-        return productRepository.findByIsActiveTrue(pageableWithSort);
-    }
 
     public Page<Product> getProductsForListing(Pageable pageable, Long categoryId, Double minPrice, 
                                              Double maxPrice, String condition, String brand, 
                                              String size, String search, String sortBy, String sortOrder) {
         System.out.println("[ProductService] Recherche search = '" + search + "'");
         
-        if (search != null && !search.trim().isEmpty()) {
-            System.out.println("[ProductService] Utilisation de la recherche textuelle !");
-            return productRepository.findByIsActiveAndTitleContainingIgnoreCase(true, search.trim(), pageable);
-        } else {
-            System.out.println("[ProductService] Recherche sans filtre textuel.");
-            return productRepository.findByIsActiveTrue(pageable);
+        // Utiliser Elasticsearch pour la recherche
+        try {
+            if (search != null && !search.trim().isEmpty()) {
+                System.out.println("[ProductService] Utilisation d'Elasticsearch pour la recherche !");
+                // Recherche avec Elasticsearch
+                Page<ProductDocument> elasticResults = elasticsearchService.searchProducts(search.trim(), pageable);
+                
+                // Convertir les ProductDocument en Product
+                List<Long> productIds = elasticResults.getContent().stream()
+                    .map(doc -> Long.parseLong(doc.getId()))
+                    .collect(Collectors.toList());
+                
+                if (!productIds.isEmpty()) {
+                    List<Product> products = productRepository.findAllById(productIds);
+                    
+                    // Créer une Page<Product> avec les résultats d'Elasticsearch
+                    return new PageImpl<>(products, pageable, elasticResults.getTotalElements());
+                } else {
+                    return new PageImpl<>(new ArrayList<>(), pageable, 0);
+                }
+            } else {
+                System.out.println("[ProductService] Recherche sans filtre textuel - utilisation de la base de données.");
+                return productRepository.findByIsActiveTrue(pageable);
+            }
+        } catch (Exception e) {
+            System.out.println("[ProductService] Erreur Elasticsearch, fallback vers la recherche basique: " + e.getMessage());
+            // Fallback vers la recherche basique
+            if (search != null && !search.trim().isEmpty()) {
+                return productRepository.findByIsActiveAndTitleContainingIgnoreCase(true, search.trim(), pageable);
+            } else {
+                return productRepository.findByIsActiveTrue(pageable);
+            }
         }
     }
 
@@ -134,9 +139,38 @@ public class ProductService {
         return productRepository.findBySellerId(sellerId);
     }
 
+    public List<Product> getProductsBySellerAndStatus(Long sellerId, String status) {
+        System.out.println("[ProductService] getProductsBySellerAndStatus appelé - sellerId: " + sellerId + ", status: " + status);
+        
+        if (status == null || status.isEmpty()) {
+            System.out.println("[ProductService] Aucun statut spécifié, retour de tous les produits");
+            return productRepository.findBySellerId(sellerId);
+        }
+        
+        try {
+            // Gérer le cas spécial TERMINATED
+            if ("TERMINATED".equals(status.toUpperCase())) {
+                System.out.println("[ProductService] Récupération des produits terminés (INACTIVE, SOLD, DELETED)");
+                return productRepository.findBySellerIdAndTerminatedStatus(sellerId);
+            }
+            
+            Product.ProductStatus productStatus = Product.ProductStatus.valueOf(status.toUpperCase());
+            System.out.println("[ProductService] Statut valide: " + productStatus);
+            
+            List<Product> products = productRepository.findBySellerIdAndStatus(sellerId, productStatus);
+            System.out.println("[ProductService] Produits trouvés: " + products.size());
+            return products;
+        } catch (IllegalArgumentException e) {
+            System.out.println("[ProductService] Statut invalide: " + status + ", retour de tous les produits");
+            // Si le statut n'est pas valide, retourner tous les produits du vendeur
+            return productRepository.findBySellerId(sellerId);
+        }
+    }
+
     public List<Product> getFavoriteProducts(Long userId) {
         // TODO: Implémenter la logique des favoris
-        return productRepository.findBySellerId(userId); // Temporaire
+        // Pour l'instant, retourner une liste vide
+        return new ArrayList<>();
     }
 
     @Transactional
@@ -241,5 +275,23 @@ public class ProductService {
     public Page<ProductListDTO> getProductsForListingCacheable(Pageable pageable) {
         Page<Product> productPage = productRepository.findActiveProductsCacheable(pageable);
         return productPage.map(product -> new ProductListDTO(product, product.getFavoriteCount()));
+    }
+
+    @Transactional
+    public void incrementViewCount(Long productId, Long userId) {
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> new IllegalArgumentException("Produit non trouvé"));
+        
+        // Vérifier si l'utilisateur a déjà vu ce produit
+        if (!productViewRepository.existsByProductIdAndUserId(productId, userId)) {
+            // Créer une nouvelle vue
+            ProductView productView = new ProductView(product, userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Utilisateur non trouvé")));
+            productViewRepository.save(productView);
+            
+            // Incrémenter le compteur de vues du produit
+            product.setViewCount(product.getViewCount() + 1);
+            productRepository.save(product);
+        }
     }
 } 

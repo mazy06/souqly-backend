@@ -34,6 +34,12 @@ dependencies {
 	implementation 'org.liquibase:liquibase-core:4.27.0'
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+	
+	// Elasticsearch dependencies
+	implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
+	implementation 'co.elastic.clients:elasticsearch-java:8.12.0'
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
+	
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
 	compileOnly 'org.projectlombok:lombok'

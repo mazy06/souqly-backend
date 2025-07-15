@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="2025-01-27-add-product-views-table" author="souqly">
+        
+        <!-- Créer la table product_views -->
+        <createTable tableName="product_views">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="product_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_product_views_product" references="products(id)"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_product_views_user" references="users(id)"/>
+            </column>
+            <column name="viewed_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ip_address" type="VARCHAR(45)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="user_agent" type="TEXT">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+        
+        <!-- Ajouter un index pour optimiser les requêtes -->
+        <createIndex tableName="product_views" indexName="idx_product_views_product_user">
+            <column name="product_id"/>
+            <column name="user_id"/>
+        </createIndex>
+        
+        <createIndex tableName="product_views" indexName="idx_product_views_viewed_at">
+            <column name="viewed_at"/>
+        </createIndex>
+        
+    </changeSet>
+
+</databaseChangeLog> 

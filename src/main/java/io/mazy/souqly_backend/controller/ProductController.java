@@ -137,6 +137,22 @@ public class ProductController {
         return ResponseEntity.ok(products);
     }
 
+    @GetMapping("/my-products/filtered")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<Product>> getMyProductsFiltered(
+        @AuthenticationPrincipal User user,
+        @RequestParam(required = false) String status
+    ) {
+        System.out.println("[ProductController] getMyProductsFiltered appelé pour user: " + user.getId() + ", status: " + status);
+        List<Product> products = productService.getProductsBySellerAndStatus(user.getId(), status);
+        System.out.println("[ProductController] Nombre de produits trouvés: " + products.size());
+        
+        // Log des statuts des produits trouvés
+        products.forEach(p -> System.out.println("[ProductController] Produit " + p.getId() + " - Status: " + p.getStatus()));
+        
+        return ResponseEntity.ok(products);
+    }
+
     @PostMapping("/{id}/toggle-status")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Product> toggleProductStatus(
@@ -195,6 +211,16 @@ public class ProductController {
         Map<Long, Long> counts = favoriteService.getFavoriteCountsForProducts(productIds);
         return ResponseEntity.ok(counts);
     }
+
+    @PostMapping("/{id}/increment-view")
+    public ResponseEntity<Void> incrementProductView(@PathVariable Long id, @AuthenticationPrincipal User user) {
+        try {
+            productService.incrementViewCount(id, user.getId());
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
     
     @GetMapping("/seller/{sellerId}")
     public ResponseEntity<List<Product>> getProductsBySeller(@PathVariable Long sellerId) {
@@ -205,4 +231,6 @@ public class ProductController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+
 } 
