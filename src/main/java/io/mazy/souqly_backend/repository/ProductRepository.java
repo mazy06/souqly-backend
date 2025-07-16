@@ -19,7 +19,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     
     Page<Product> findByStatus(Product.ProductStatus status, Pageable pageable);
     
-    @Query("SELECT p FROM Product p WHERE p.status = io.mazy.souqly_backend.entity.Product$ProductStatus.ACTIVE ORDER BY p.createdAt DESC")
+    @Query("SELECT p FROM Product p WHERE p.status IN ('ACTIVE', 'SOLD') ORDER BY p.createdAt DESC")
     @QueryHints({ @QueryHint(name = "org.hibernate.cacheable", value = "true") })
     Page<Product> findActiveProductsCacheable(Pageable pageable);
     
@@ -44,6 +44,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findByIsActiveTrue(Pageable pageable);
     
     List<Product> findByIsActiveTrue();
+
+    @Query("SELECT p FROM Product p WHERE p.status IN ('ACTIVE', 'SOLD') ORDER BY p.createdAt DESC")
+    Page<Product> findActiveAndSoldProducts(Pageable pageable);
 
     // Méthode pour la recherche textuelle
     Page<Product> findByIsActiveAndTitleContainingIgnoreCase(Boolean isActive, String title, Pageable pageable);

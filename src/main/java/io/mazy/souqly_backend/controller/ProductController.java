@@ -221,6 +221,22 @@ public class ProductController {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+    @PostMapping("/{id}/mark-as-sold")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Product> markProductAsSold(
+        @PathVariable Long id,
+        @AuthenticationPrincipal User user
+    ) {
+        try {
+            Product product = productService.markAsSold(id, user.getId());
+            return ResponseEntity.ok(product);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(null);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
     
     @GetMapping("/seller/{sellerId}")
     public ResponseEntity<List<Product>> getProductsBySeller(@PathVariable Long sellerId) {

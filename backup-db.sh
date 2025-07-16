@@ -16,11 +16,26 @@ if docker-compose ps postgres | grep -q "Up"; then
     docker-compose exec -T postgres pg_dump -U postgres souqly > "$BACKUP_FILE"
     
     if [ $? -eq 0 ]; then
-        echo "✅ Backup créé avec succès : $BACKUP_FILE"
-        echo "📊 Taille du fichier : $(du -h "$BACKUP_FILE" | cut -f1)"
+        echo "✅ Backup de base créé avec succès"
     else
         echo "❌ Erreur lors de la création du backup"
         exit 1
+    fi
+    
+    # Ajouter le seed au backup
+    echo "🌱 Ajout du script de seed au backup..."
+    if [ -f "./seed-database.sql" ]; then
+        echo "" >> "$BACKUP_FILE"
+        echo "-- Script de seed pour alimenter la base de données" >> "$BACKUP_FILE"
+        echo "-- Ajouté automatiquement lors du backup" >> "$BACKUP_FILE"
+        echo "" >> "$BACKUP_FILE"
+        cat ./seed-database.sql >> "$BACKUP_FILE"
+        
+        echo "✅ Script de seed ajouté au backup"
+        echo "📊 Taille finale du fichier : $(du -h "$BACKUP_FILE" | cut -f1)"
+    else
+        echo "⚠️  Script de seed non trouvé : ./seed-database.sql"
+        echo "📊 Taille du fichier : $(du -h "$BACKUP_FILE" | cut -f1)"
     fi
 else
     echo "⚠️  Conteneur PostgreSQL n'est pas en cours d'exécution"
@@ -35,11 +50,26 @@ else
     docker-compose exec -T postgres pg_dump -U postgres souqly > "$BACKUP_FILE"
     
     if [ $? -eq 0 ]; then
-        echo "✅ Backup créé avec succès : $BACKUP_FILE"
-        echo "📊 Taille du fichier : $(du -h "$BACKUP_FILE" | cut -f1)"
+        echo "✅ Backup de base créé avec succès"
     else
         echo "❌ Erreur lors de la création du backup"
         exit 1
+    fi
+    
+    # Ajouter le seed au backup
+    echo "🌱 Ajout du script de seed au backup..."
+    if [ -f "./seed-database.sql" ]; then
+        echo "" >> "$BACKUP_FILE"
+        echo "-- Script de seed pour alimenter la base de données" >> "$BACKUP_FILE"
+        echo "-- Ajouté automatiquement lors du backup" >> "$BACKUP_FILE"
+        echo "" >> "$BACKUP_FILE"
+        cat ./seed-database.sql >> "$BACKUP_FILE"
+        
+        echo "✅ Script de seed ajouté au backup"
+        echo "📊 Taille finale du fichier : $(du -h "$BACKUP_FILE" | cut -f1)"
+    else
+        echo "⚠️  Script de seed non trouvé : ./seed-database.sql"
+        echo "📊 Taille du fichier : $(du -h "$BACKUP_FILE" | cut -f1)"
     fi
 fi
 

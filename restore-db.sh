@@ -47,6 +47,9 @@ else
     exit 1
 fi
 
+# Le seed est maintenant intégré dans le backup, pas besoin de l'exécuter séparément
+echo "🌱 Le script de seed est intégré dans le backup et sera exécuté automatiquement"
+
 echo "🚀 Démarrage de tous les services..."
 docker-compose up -d
 

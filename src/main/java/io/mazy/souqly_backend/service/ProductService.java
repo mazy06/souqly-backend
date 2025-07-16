@@ -118,7 +118,7 @@ public class ProductService {
                 }
             } else {
                 System.out.println("[ProductService] Recherche sans filtre textuel - utilisation de la base de données.");
-                return productRepository.findByIsActiveTrue(pageable);
+                return productRepository.findActiveAndSoldProducts(pageable);
             }
         } catch (Exception e) {
             System.out.println("[ProductService] Erreur Elasticsearch, fallback vers la recherche basique: " + e.getMessage());
@@ -126,7 +126,7 @@ public class ProductService {
             if (search != null && !search.trim().isEmpty()) {
                 return productRepository.findByIsActiveAndTitleContainingIgnoreCase(true, search.trim(), pageable);
             } else {
-                return productRepository.findByIsActiveTrue(pageable);
+                return productRepository.findActiveAndSoldProducts(pageable);
             }
         }
     }
@@ -273,7 +273,7 @@ public class ProductService {
     }
 
     public Page<ProductListDTO> getProductsForListingCacheable(Pageable pageable) {
-        Page<Product> productPage = productRepository.findActiveProductsCacheable(pageable);
+        Page<Product> productPage = productRepository.findActiveAndSoldProducts(pageable);
         return productPage.map(product -> new ProductListDTO(product, product.getFavoriteCount()));
     }
 
@@ -293,5 +293,23 @@ public class ProductService {
             product.setViewCount(product.getViewCount() + 1);
             productRepository.save(product);
         }
+    }
+
+    @Transactional
+    public Product markAsSold(Long productId, Long sellerId) {
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> new IllegalArgumentException("Produit non trouvé"));
+        
+        if (!product.getSeller().getId().equals(sellerId)) {
+            throw new IllegalArgumentException("Vous n'êtes pas autorisé à modifier ce produit");
+        }
+        
+        // Marquer le produit comme vendu
+        product.setStatus(Product.ProductStatus.SOLD);
+        product.setIsActive(false); // Désactiver le produit
+        
+        System.out.println("[ProductService] Produit " + productId + " marqué comme vendu par l'utilisateur " + sellerId);
+        
+        return productRepository.save(product);
     }
 } 
