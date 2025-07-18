@@ -38,6 +38,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/categories").permitAll()
                 .requestMatchers("/api/categories/tree").permitAll()
                 .requestMatchers("/api/categories/root").permitAll()
                 .requestMatchers("/api/categories/search").permitAll()

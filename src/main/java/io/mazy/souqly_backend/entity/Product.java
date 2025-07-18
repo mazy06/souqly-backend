@@ -31,7 +31,7 @@ public class Product {
     @Column(nullable = false, length = 120)
     private String title;
     
-    @Column(nullable = false, length = 1000)
+    @Column(nullable = false, length = 4000)
     private String description;
     
     @Column(nullable = false)
