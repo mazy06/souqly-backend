@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="2025-01-27-add-product-reports-table" author="souqly">
+        <!-- Table principale des signalements -->
+        <createTable tableName="product_reports">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="product_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_product_reports_product" references="products(id)"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_product_reports_user" references="users(id)"/>
+            </column>
+            <column name="custom_reason" type="TEXT"/>
+            <column name="description" type="TEXT"/>
+            <column name="status" type="VARCHAR(20)" defaultValue="PENDING">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Table pour les raisons de signalement (relation many-to-many) -->
+        <createTable tableName="product_report_reasons">
+            <column name="report_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_report_reasons_report" references="product_reports(id)"/>
+            </column>
+            <column name="reason" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Index pour améliorer les performances -->
+        <createIndex tableName="product_reports" indexName="idx_product_reports_product_id">
+            <column name="product_id"/>
+        </createIndex>
+
+        <createIndex tableName="product_reports" indexName="idx_product_reports_user_id">
+            <column name="user_id"/>
+        </createIndex>
+
+        <createIndex tableName="product_reports" indexName="idx_product_reports_status">
+            <column name="status"/>
+        </createIndex>
+
+        <createIndex tableName="product_reports" indexName="idx_product_reports_created_at">
+            <column name="created_at"/>
+        </createIndex>
+
+        <createIndex tableName="product_report_reasons" indexName="idx_report_reasons_report_id">
+            <column name="report_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog> 

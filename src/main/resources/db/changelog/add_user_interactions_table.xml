@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="2025-07-20-add-user-interactions-table" author="souqly">
+        
+        <!-- Table pour tracker les interactions utilisateur -->
+        <createTable tableName="user_interactions">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_user_interactions_user" references="users(id)"/>
+            </column>
+            <column name="product_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_user_interactions_product" references="products(id)"/>
+            </column>
+            <column name="interaction_type" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="interaction_value" type="VARCHAR(255)"/>
+            <column name="session_id" type="VARCHAR(255)"/>
+            <column name="ip_address" type="VARCHAR(45)"/>
+            <column name="user_agent" type="TEXT"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Table pour les profils utilisateur (content-based filtering) -->
+        <createTable tableName="user_profiles">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false" unique="true" foreignKeyName="fk_user_profiles_user" references="users(id)"/>
+            </column>
+            <column name="preferred_categories" type="TEXT"/>
+            <column name="preferred_price_range_min" type="DECIMAL(10,2)"/>
+            <column name="preferred_price_range_max" type="DECIMAL(10,2)"/>
+            <column name="preferred_brands" type="TEXT"/>
+            <column name="preferred_conditions" type="TEXT"/>
+            <column name="preferred_locations" type="TEXT"/>
+            <column name="last_updated" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Table pour les articles boostés/sponsorisés -->
+        <createTable tableName="product_boosts">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="product_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_product_boosts_product" references="products(id)"/>
+            </column>
+            <column name="boost_type" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="boost_level" type="INTEGER" defaultValue="1">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_date" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_date" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_active" type="BOOLEAN" defaultValue="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Table pour les scores de similarité (collaborative filtering) -->
+        <createTable tableName="user_similarities">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id_1" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_user_similarities_user1" references="users(id)"/>
+            </column>
+            <column name="user_id_2" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_user_similarities_user2" references="users(id)"/>
+            </column>
+            <column name="similarity_score" type="DECIMAL(5,4)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_calculated" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Index pour améliorer les performances -->
+        <createIndex tableName="user_interactions" indexName="idx_user_interactions_user_id">
+            <column name="user_id"/>
+        </createIndex>
+        
+        <createIndex tableName="user_interactions" indexName="idx_user_interactions_product_id">
+            <column name="product_id"/>
+        </createIndex>
+        
+        <createIndex tableName="user_interactions" indexName="idx_user_interactions_type">
+            <column name="interaction_type"/>
+        </createIndex>
+        
+        <createIndex tableName="user_interactions" indexName="idx_user_interactions_created_at">
+            <column name="created_at"/>
+        </createIndex>
+        
+        <createIndex tableName="product_boosts" indexName="idx_product_boosts_active">
+            <column name="is_active"/>
+        </createIndex>
+        
+        <createIndex tableName="product_boosts" indexName="idx_product_boosts_dates">
+            <column name="start_date"/>
+            <column name="end_date"/>
+        </createIndex>
+        
+        <createIndex tableName="user_similarities" indexName="idx_user_similarities_users">
+            <column name="user_id_1"/>
+            <column name="user_id_2"/>
+        </createIndex>
+
+    </changeSet>
+
+</databaseChangeLog> 

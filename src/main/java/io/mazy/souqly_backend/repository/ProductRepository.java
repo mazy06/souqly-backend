@@ -66,4 +66,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("SELECT p FROM Product p WHERE p.seller.id = :sellerId AND p.status IN ('INACTIVE', 'SOLD', 'DELETED')")
     List<Product> findBySellerIdAndTerminatedStatus(@Param("sellerId") Long sellerId);
+    
+    // Méthodes pour les recommandations
+    List<Product> findByIdInAndIsActiveTrue(List<Long> ids);
+    
+    List<Product> findByIsActiveTrueOrderByFavoriteCountDesc();
 } 

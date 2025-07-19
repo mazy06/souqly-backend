@@ -23,5 +23,7 @@
     <include file="db/changelog/add_reviews_table.xml"/>
     <include file="db/changelog/add_orders_table.xml"/>
     <include file="db/changelog/db.changelog-2025-07-17-extend-description.xml"/>
+    <include file="db/changelog/add_user_interactions_table.xml"/>
+    <include file="db/changelog/add_product_reports_table.xml"/>
 
 </databaseChangeLog> 
