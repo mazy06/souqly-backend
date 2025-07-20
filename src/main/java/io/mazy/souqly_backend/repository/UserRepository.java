@@ -29,4 +29,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
     
     @Query("SELECT u FROM User u WHERE u.authProvider = :provider")
     List<User> findByAuthProvider(@Param("provider") User.AuthProvider provider);
+    
+    // Méthodes pour la gestion des utilisateurs
+    long countByEnabledTrue();
+    
+    long countByEnabledFalse();
+    
+    long countByBannedTrue();
+    
+    long countByRole(User.UserRole role);
+    
+
 } 

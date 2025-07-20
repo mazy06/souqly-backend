@@ -25,6 +25,11 @@ public class AuthService {
         );
         
         User user = (User) authentication.getPrincipal();
+        
+        // Mettre à jour lastLoginAt
+        user.setLastLoginAt(java.time.LocalDateTime.now());
+        userService.updateLastLoginAt(user);
+        
         String jwtToken = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
         
@@ -36,6 +41,14 @@ public class AuthService {
         if (userService.existsByEmail(user.getEmail())) {
             throw new RuntimeException("User already exists");
         }
+        
+        // Empêcher la création de comptes MODERATOR ou ADMIN depuis l'inscription normale
+        if (user.getRole() == User.UserRole.MODERATOR || user.getRole() == User.UserRole.ADMIN) {
+            throw new RuntimeException("Cannot create moderator or admin accounts through normal registration");
+        }
+        
+        // Forcer le rôle USER pour les nouvelles inscriptions
+        user.setRole(User.UserRole.USER);
         
         // Create new user
         UserDto createdUser = userService.createUser(user);

@@ -58,6 +58,9 @@ public class User implements UserDetails {
     @Column(name = "is_enabled")
     private boolean enabled = true;
     
+    @Column(name = "is_banned")
+    private boolean banned = false;
+    
     @Column(name = "is_guest")
     private boolean guest = false;
     
@@ -66,6 +69,9 @@ public class User implements UserDetails {
     
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+    
+    @Column(name = "last_login_at")
+    private LocalDateTime lastLoginAt;
     
     @PrePersist
     protected void onCreate() {
@@ -109,8 +115,24 @@ public class User implements UserDetails {
         return enabled;
     }
     
+    public LocalDateTime getLastLoginAt() {
+        return lastLoginAt;
+    }
+    
+    public void setLastLoginAt(LocalDateTime lastLoginAt) {
+        this.lastLoginAt = lastLoginAt;
+    }
+    
+    public boolean isBanned() {
+        return banned;
+    }
+    
+    public void setBanned(boolean banned) {
+        this.banned = banned;
+    }
+    
     public enum UserRole {
-        USER, ADMIN
+        USER, MODERATOR, ADMIN
     }
     
     public enum AuthProvider {

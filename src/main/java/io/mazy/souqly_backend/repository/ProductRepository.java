@@ -71,4 +71,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByIdInAndIsActiveTrue(List<Long> ids);
     
     List<Product> findByIsActiveTrueOrderByFavoriteCountDesc();
+    
+    // Méthode pour compter les produits par utilisateur
+    int countBySellerId(Long sellerId);
 } 

@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -181,6 +183,15 @@ public class UserService implements UserDetailsService {
                 .collect(Collectors.toList());
     }
 
+    public Page<UserDto> getAllUsers(Pageable pageable, String search, String status, String role) {
+        Page<User> usersPage = userRepository.findAll(pageable);
+        
+        return usersPage.map(user -> {
+            int adsCount = productRepository.findBySellerId(user.getId()).size();
+            return new UserDto(user, adsCount);
+        });
+    }
+
     public Optional<UserDto> getUserById(Long id) {
         Optional<User> userOpt = userRepository.findById(id);
         if (userOpt.isPresent()) {
@@ -291,6 +302,12 @@ public class UserService implements UserDetailsService {
     // Récupérer l'ID de l'utilisateur connecté
     public Long getCurrentUserId() {
         return getCurrentUser().getId();
+    }
+    
+    // Mettre à jour lastLoginAt
+    public void updateLastLoginAt(User user) {
+        user.setLastLoginAt(java.time.LocalDateTime.now());
+        userRepository.save(user);
     }
     
     // Méthodes pour le profil détaillé

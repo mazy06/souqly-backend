@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
+
+    <changeSet id="fix-users-bytea-fields" author="souqly">
+        <!-- Corriger les champs qui pourraient être en bytea -->
+        <sql>
+            -- Convertir first_name en TEXT si nécessaire
+            ALTER TABLE users ALTER COLUMN first_name TYPE TEXT USING first_name::TEXT;
+        </sql>
+        
+        <sql>
+            -- Convertir last_name en TEXT si nécessaire
+            ALTER TABLE users ALTER COLUMN last_name TYPE TEXT USING last_name::TEXT;
+        </sql>
+        
+        <sql>
+            -- Convertir email en TEXT si nécessaire
+            ALTER TABLE users ALTER COLUMN email TYPE TEXT USING email::TEXT;
+        </sql>
+        
+        <sql>
+            -- Convertir password en TEXT si nécessaire
+            ALTER TABLE users ALTER COLUMN password TYPE TEXT USING password::TEXT;
+        </sql>
+        
+        <sql>
+            -- Convertir phone en TEXT si nécessaire
+            ALTER TABLE users ALTER COLUMN phone TYPE TEXT USING phone::TEXT;
+        </sql>
+        
+        <sql>
+            -- Convertir profile_picture_url en TEXT si nécessaire
+            ALTER TABLE users ALTER COLUMN profile_picture_url TYPE TEXT USING profile_picture_url::TEXT;
+        </sql>
+        
+        <sql>
+            -- Convertir provider_id en TEXT si nécessaire
+            ALTER TABLE users ALTER COLUMN provider_id TYPE TEXT USING provider_id::TEXT;
+        </sql>
+        
+        <sql>
+            -- Supprimer l'ancienne colonne address si elle existe
+            ALTER TABLE users DROP COLUMN IF EXISTS address;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog> 
