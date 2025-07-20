@@ -27,6 +27,7 @@ import io.mazy.souqly_backend.entity.elasticsearch.ProductDocument;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.PageImpl;
 import io.mazy.souqly_backend.repository.ProductViewRepository;
+import io.mazy.souqly_backend.dto.ProductMyProductsDTO;
 
 @Service
 public class ProductService {
@@ -136,35 +137,130 @@ public class ProductService {
     }
 
     public List<Product> getProductsBySeller(Long sellerId) {
-        return productRepository.findBySellerId(sellerId);
+        List<Product> products = productRepository.findBySellerId(sellerId);
+        
+        // Charger explicitement les relations lazy pour éviter les erreurs de sérialisation
+        for (Product product : products) {
+            // Forcer le chargement de la catégorie
+            if (product.getCategory() != null) {
+                product.getCategory().getId();
+                // Charger les sous-catégories si elles existent
+                if (product.getCategory().getChildren() != null) {
+                    product.getCategory().getChildren().size();
+                }
+            }
+            // Forcer le chargement du vendeur
+            if (product.getSeller() != null) {
+                product.getSeller().getId();
+            }
+            // Charger les images
+            product.setImages(productImageRepository.findByProductId(product.getId()));
+        }
+        
+        return products;
     }
 
     public List<Product> getProductsBySellerAndStatus(Long sellerId, String status) {
         System.out.println("[ProductService] getProductsBySellerAndStatus appelé - sellerId: " + sellerId + ", status: " + status);
         
+        List<Product> products;
+        
         if (status == null || status.isEmpty()) {
             System.out.println("[ProductService] Aucun statut spécifié, retour de tous les produits");
-            return productRepository.findBySellerId(sellerId);
+            products = productRepository.findBySellerId(sellerId);
+        } else {
+            try {
+                // Gérer le cas spécial TERMINATED
+                if ("TERMINATED".equals(status.toUpperCase())) {
+                    System.out.println("[ProductService] Récupération des produits terminés (INACTIVE, SOLD, DELETED)");
+                    products = productRepository.findBySellerIdAndTerminatedStatus(sellerId);
+                } else {
+                    Product.ProductStatus productStatus = Product.ProductStatus.valueOf(status.toUpperCase());
+                    System.out.println("[ProductService] Statut valide: " + productStatus);
+                    products = productRepository.findBySellerIdAndStatus(sellerId, productStatus);
+                }
+            } catch (IllegalArgumentException e) {
+                System.out.println("[ProductService] Statut invalide: " + status + ", retour de tous les produits");
+                // Si le statut n'est pas valide, retourner tous les produits du vendeur
+                products = productRepository.findBySellerId(sellerId);
+            }
         }
         
-        try {
-            // Gérer le cas spécial TERMINATED
-            if ("TERMINATED".equals(status.toUpperCase())) {
-                System.out.println("[ProductService] Récupération des produits terminés (INACTIVE, SOLD, DELETED)");
-                return productRepository.findBySellerIdAndTerminatedStatus(sellerId);
+        System.out.println("[ProductService] Produits trouvés: " + products.size());
+        
+        // Charger explicitement les relations lazy pour éviter les erreurs de sérialisation
+        for (Product product : products) {
+            // Forcer le chargement de la catégorie
+            if (product.getCategory() != null) {
+                product.getCategory().getId();
+                // Charger les sous-catégories si elles existent
+                if (product.getCategory().getChildren() != null) {
+                    product.getCategory().getChildren().size();
+                }
             }
-            
-            Product.ProductStatus productStatus = Product.ProductStatus.valueOf(status.toUpperCase());
-            System.out.println("[ProductService] Statut valide: " + productStatus);
-            
-            List<Product> products = productRepository.findBySellerIdAndStatus(sellerId, productStatus);
-            System.out.println("[ProductService] Produits trouvés: " + products.size());
-            return products;
-        } catch (IllegalArgumentException e) {
-            System.out.println("[ProductService] Statut invalide: " + status + ", retour de tous les produits");
-            // Si le statut n'est pas valide, retourner tous les produits du vendeur
-            return productRepository.findBySellerId(sellerId);
+            // Forcer le chargement du vendeur
+            if (product.getSeller() != null) {
+                product.getSeller().getId();
+            }
+            // Charger les images
+            product.setImages(productImageRepository.findByProductId(product.getId()));
         }
+        
+        return products;
+    }
+
+    private void initializeCategoryChildren(io.mazy.souqly_backend.entity.Category category) {
+        if (category != null && category.getChildren() != null) {
+            // Force le chargement de la liste des enfants
+            category.getChildren().size();
+            
+            // Force le chargement de chaque enfant et de ses propres enfants
+            for (io.mazy.souqly_backend.entity.Category child : category.getChildren()) {
+                // Force le chargement de tous les champs de l'enfant
+                child.getId();
+                child.getKey();
+                child.getLabel();
+                child.getIconName();
+                child.getBadgeText();
+                child.isActive();
+                child.getSortOrder();
+                
+                // Force le chargement récursif des enfants de cet enfant
+                initializeCategoryChildren(child);
+            }
+        }
+    }
+
+    public List<ProductMyProductsDTO> getProductsBySellerAndStatusDTO(Long sellerId, String status) {
+        System.out.println("[ProductService] getProductsBySellerAndStatusDTO ENTRÉE - sellerId: " + sellerId + ", status: " + status);
+        List<Product> products = getProductsBySellerAndStatus(sellerId, status);
+        List<ProductMyProductsDTO> dtos = new ArrayList<>();
+        System.out.println("[ProductService] getProductsBySellerAndStatusDTO - Nombre de produits: " + products.size());
+        
+        for (Product product : products) {
+            System.out.println("[ProductService] Traitement du produit ID: " + product.getId() + ", Title: " + product.getTitle());
+            if (product.getCategory() != null) {
+                initializeCategoryChildren(product.getCategory());
+            }
+            ProductMyProductsDTO dto = new ProductMyProductsDTO(product);
+            System.out.println("[ProductService] DTO créé - ID: " + dto.getId() + ", Title: " + dto.getTitle());
+            dtos.add(dto);
+        }
+        
+        System.out.println("[ProductService] Nombre de DTOs créés: " + dtos.size());
+        return dtos;
+    }
+
+    public List<ProductMyProductsDTO> getProductsBySellerDTO(Long sellerId) {
+        List<Product> products = getProductsBySeller(sellerId);
+        List<ProductMyProductsDTO> dtos = new ArrayList<>();
+        for (Product product : products) {
+            if (product.getCategory() != null) {
+                initializeCategoryChildren(product.getCategory());
+            }
+            dtos.add(new ProductMyProductsDTO(product));
+        }
+        return dtos;
     }
 
     public List<Product> getFavoriteProducts(Long userId) {

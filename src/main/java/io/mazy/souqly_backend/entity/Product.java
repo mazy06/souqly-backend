@@ -37,17 +37,19 @@ public class Product {
     @Column(nullable = false)
     private Double price;
     
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonManagedReference
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<ProductImage> images = new ArrayList<>();
     
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id")
+    @JsonIgnore
     private Category category;
     
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "seller_id")
+    @JsonIgnore
     private User seller;
     
     @Column(name = "created_at")

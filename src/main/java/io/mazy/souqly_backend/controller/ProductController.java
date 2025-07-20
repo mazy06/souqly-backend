@@ -5,6 +5,7 @@ import io.mazy.souqly_backend.entity.Product;
 import io.mazy.souqly_backend.entity.User;
 import io.mazy.souqly_backend.service.ProductService;
 import io.mazy.souqly_backend.dto.ProductListDTO;
+import io.mazy.souqly_backend.dto.ProductMyProductsDTO;
 import io.mazy.souqly_backend.service.FavoriteService;
 import io.mazy.souqly_backend.repository.ProductImageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -132,25 +133,29 @@ public class ProductController {
 
     @GetMapping("/my-products")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<Product>> getMyProducts(@AuthenticationPrincipal User user) {
-        List<Product> products = productService.getProductsBySeller(user.getId());
-        return ResponseEntity.ok(products);
+    public ResponseEntity<List<ProductMyProductsDTO>> getMyProducts(@AuthenticationPrincipal User user) {
+        List<ProductMyProductsDTO> productDTOs = productService.getProductsBySellerDTO(user.getId());
+        return ResponseEntity.ok(productDTOs);
     }
 
     @GetMapping("/my-products/filtered")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<Product>> getMyProductsFiltered(
+    public ResponseEntity<List<ProductMyProductsDTO>> getMyProductsFiltered(
         @AuthenticationPrincipal User user,
         @RequestParam(required = false) String status
     ) {
+        System.out.println("[ProductController] getMyProductsFiltered ENTRÉE - user: " + user.getId() + ", status: " + status);
         System.out.println("[ProductController] getMyProductsFiltered appelé pour user: " + user.getId() + ", status: " + status);
-        List<Product> products = productService.getProductsBySellerAndStatus(user.getId(), status);
-        System.out.println("[ProductController] Nombre de produits trouvés: " + products.size());
+        List<ProductMyProductsDTO> productDTOs = productService.getProductsBySellerAndStatusDTO(user.getId(), status);
+        System.out.println("[ProductController] Nombre de produits trouvés: " + productDTOs.size());
         
-        // Log des statuts des produits trouvés
-        products.forEach(p -> System.out.println("[ProductController] Produit " + p.getId() + " - Status: " + p.getStatus()));
+        // Log du premier DTO pour debug
+        if (!productDTOs.isEmpty()) {
+            ProductMyProductsDTO firstDto = productDTOs.get(0);
+            System.out.println("[ProductController] Premier DTO - ID: " + firstDto.getId() + ", Title: " + firstDto.getTitle() + ", Price: " + firstDto.getPrice());
+        }
         
-        return ResponseEntity.ok(products);
+        return ResponseEntity.ok(productDTOs);
     }
 
     @PostMapping("/{id}/toggle-status")
@@ -239,10 +244,16 @@ public class ProductController {
     }
     
     @GetMapping("/seller/{sellerId}")
-    public ResponseEntity<List<Product>> getProductsBySeller(@PathVariable Long sellerId) {
+    public ResponseEntity<List<ProductListDTO>> getProductsBySeller(@PathVariable Long sellerId) {
         try {
             List<Product> products = productService.getProductsBySeller(sellerId);
-            return ResponseEntity.ok(products);
+            
+            // Convertir en DTO pour éviter les problèmes de sérialisation
+            List<ProductListDTO> productDTOs = products.stream()
+                .map(product -> new ProductListDTO(product, product.getFavoriteCount()))
+                .collect(java.util.stream.Collectors.toList());
+            
+            return ResponseEntity.ok(productDTOs);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
