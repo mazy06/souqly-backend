@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="2025-01-27-add-product-boost" author="souqly">
+        
+        <!-- Ajouter la colonne is_boosted -->
+        <addColumn tableName="products">
+            <column name="is_boosted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        
+        <!-- Ajouter la colonne boost_level -->
+        <addColumn tableName="products">
+            <column name="boost_level" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        
+        <!-- Ajouter un index pour optimiser les requêtes de boost -->
+        <createIndex tableName="products" indexName="idx_products_boost">
+            <column name="is_boosted"/>
+            <column name="boost_level"/>
+        </createIndex>
+        
+    </changeSet>
+
+</databaseChangeLog> 

@@ -17,6 +17,8 @@ public class ProductListDTO {
     private String status;
     private int favoriteCount;
     private List<ImageMeta> images;
+    private Boolean isBoosted;
+    private Integer boostLevel;
     // Ajoute d'autres champs si besoin
 
     public ProductListDTO(Product product, int favoriteCount) {
@@ -30,6 +32,8 @@ public class ProductListDTO {
         this.shippingInfo = product.getShippingInfo();
         this.status = product.getStatus().toString();
         this.favoriteCount = favoriteCount;
+        this.isBoosted = product.getIsBoosted() != null ? product.getIsBoosted() : false;
+        this.boostLevel = product.getBoostLevel() != null ? product.getBoostLevel() : 0;
         this.images = product.getImages().stream()
             .map(img -> new ImageMeta(img.getId(), img.getFileName(), img.getContentType()))
             .collect(Collectors.toList());
@@ -61,4 +65,6 @@ public class ProductListDTO {
     public String getStatus() { return status; }
     public int getFavoriteCount() { return favoriteCount; }
     public List<ImageMeta> getImages() { return images; }
+    public Boolean getIsBoosted() { return isBoosted; }
+    public Integer getBoostLevel() { return boostLevel; }
 } 

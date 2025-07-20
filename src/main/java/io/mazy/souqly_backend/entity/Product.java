@@ -104,6 +104,12 @@ public class Product {
     @Column(name = "country")
     private String country;
     
+    @Column(name = "is_boosted")
+    private Boolean isBoosted = false;
+    
+    @Column(name = "boost_level")
+    private Integer boostLevel = 0;
+    
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

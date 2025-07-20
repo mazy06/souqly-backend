@@ -248,5 +248,45 @@ public class ProductController {
         }
     }
 
+    /**
+     * Endpoint de test pour vérifier les champs boost
+     */
+    @GetMapping("/test-boost/{id}")
+    public ResponseEntity<Map<String, Object>> testProductBoost(@PathVariable Long id) {
+        try {
+            Optional<Product> productOpt = productService.getProduct(id);
+            if (productOpt.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            Product product = productOpt.get();
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", product.getId());
+            response.put("title", product.getTitle());
+            response.put("price", product.getPrice());
+            response.put("isBoosted", product.getIsBoosted());
+            response.put("boostLevel", product.getBoostLevel());
+            response.put("favoriteCount", product.getFavoriteCount());
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * Endpoint pour vider le cache et recharger les données
+     */
+    @PostMapping("/cache/clear")
+    public ResponseEntity<String> clearCache() {
+        try {
+            // Forcer le rechargement des données depuis la base
+            productService.clearCache();
+            return ResponseEntity.ok("Cache vidé avec succès");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Erreur lors du vidage du cache: " + e.getMessage());
+        }
+    }
+
 
 } 

@@ -173,6 +173,15 @@ public class ProductService {
         return new ArrayList<>();
     }
 
+    /**
+     * Vide le cache et force le rechargement des données
+     */
+    public void clearCache() {
+        // Éviter le cache Hibernate pour forcer le rechargement depuis la base
+        productRepository.flush();
+        System.out.println("[ProductService] Cache vidé - données rechargées depuis la base");
+    }
+
     @Transactional
     public void deleteProduct(Long productId, Long sellerId) {
         Product product = productRepository.findById(productId)

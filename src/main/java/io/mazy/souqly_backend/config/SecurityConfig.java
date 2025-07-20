@@ -55,8 +55,12 @@ public class SecurityConfig {
                 .requestMatchers("/api/products").permitAll()
                 .requestMatchers("/api/products/{id}").permitAll()
                 .requestMatchers("/api/products/seller/**").permitAll()
+                .requestMatchers("/api/products/cache/**").permitAll()
+                .requestMatchers("/api/products/test-boost/**").permitAll()
                 .requestMatchers("/api/search/**").permitAll()
                 .requestMatchers("/api/reviews/**").permitAll()
+                // Ajouter les endpoints de recommandations
+                .requestMatchers("/api/recommendations/**").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .anyRequest().authenticated()
             )
