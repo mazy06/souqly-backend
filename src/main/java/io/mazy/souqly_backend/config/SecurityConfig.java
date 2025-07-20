@@ -61,6 +61,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/reviews/**").permitAll()
                 // Ajouter les endpoints de recommandations
                 .requestMatchers("/api/recommendations/**").permitAll()
+                // Endpoints des formulaires dynamiques (temporaire pour le développement)
+                .requestMatchers("/api/admin/forms/**").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .anyRequest().authenticated()
             )

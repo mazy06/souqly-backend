@@ -28,5 +28,6 @@
     <include file="db/changelog/add_last_login_at.xml"/>
     <include file="db/changelog/add_banned_field.xml"/>
     <include file="db/changelog/fix_users_bytea_fields.xml"/>
+    <include file="db/changelog/add_dynamic_forms.xml"/>
 
 </databaseChangeLog> 

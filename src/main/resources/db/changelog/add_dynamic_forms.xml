@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
+
+    <!-- Table pour les formulaires dynamiques -->
+    <changeSet id="add-dynamic-forms" author="souqly">
+        <createTable tableName="dynamic_forms">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="category_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_dynamic_forms_category" references="categories(id)"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Table pour les champs de formulaire -->
+        <createTable tableName="form_fields">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="form_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_form_fields_form" references="dynamic_forms(id)"/>
+            </column>
+            <column name="field_key" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="field_label" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="field_type" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="field_placeholder" type="VARCHAR(255)"/>
+            <column name="field_required" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="field_options" type="TEXT"/>
+            <column name="field_validation" type="VARCHAR(255)"/>
+            <column name="field_order" type="INTEGER" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Table pour les valeurs des champs de formulaire -->
+        <createTable tableName="product_form_values">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="product_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_product_form_values_product" references="products(id)"/>
+            </column>
+            <column name="field_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_product_form_values_field" references="form_fields(id)"/>
+            </column>
+            <column name="field_value" type="TEXT"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Index pour améliorer les performances -->
+        <createIndex tableName="dynamic_forms" indexName="idx_dynamic_forms_category">
+            <column name="category_id"/>
+        </createIndex>
+        
+        <createIndex tableName="form_fields" indexName="idx_form_fields_form">
+            <column name="form_id"/>
+        </createIndex>
+        
+        <createIndex tableName="form_fields" indexName="idx_form_fields_order">
+            <column name="form_id"/>
+            <column name="field_order"/>
+        </createIndex>
+        
+        <createIndex tableName="product_form_values" indexName="idx_product_form_values_product">
+            <column name="product_id"/>
+        </createIndex>
+        
+        <createIndex tableName="product_form_values" indexName="idx_product_form_values_field">
+            <column name="field_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog> 

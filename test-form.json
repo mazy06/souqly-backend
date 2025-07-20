@@ -1,0 +1,41 @@
+{
+  "categoryId": 10,
+  "name": "Formulaire Vêtements",
+  "description": "Formulaire pour les vêtements",
+  "fields": [
+    {
+      "fieldKey": "taille",
+      "fieldLabel": "Taille",
+      "fieldType": "select",
+      "fieldPlaceholder": "Sélectionnez une taille",
+      "fieldRequired": true,
+      "fieldOptions": "XS,S,M,L,XL,XXL",
+      "fieldOrder": 1
+    },
+    {
+      "fieldKey": "couleur",
+      "fieldLabel": "Couleur",
+      "fieldType": "text",
+      "fieldPlaceholder": "Ex: Rouge, Bleu, Noir",
+      "fieldRequired": true,
+      "fieldOrder": 2
+    },
+    {
+      "fieldKey": "matiere",
+      "fieldLabel": "Matière",
+      "fieldType": "text",
+      "fieldPlaceholder": "Ex: Coton, Laine, Polyester",
+      "fieldRequired": false,
+      "fieldOrder": 3
+    },
+    {
+      "fieldKey": "etat",
+      "fieldLabel": "État",
+      "fieldType": "select",
+      "fieldPlaceholder": "Sélectionnez l'état",
+      "fieldRequired": true,
+      "fieldOptions": "Neuf,Très bon état,Bon état,Correct",
+      "fieldOrder": 4
+    }
+  ]
+} 
